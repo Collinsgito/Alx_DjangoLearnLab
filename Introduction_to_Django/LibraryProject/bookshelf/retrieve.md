@@ -1,13 +1,13 @@
 
-### 📄 `retrieve.md`
-```markdown
-# Retrieve the Book instance
+# Retrieve the Book instance using Book.objects.get()
 
 ```python
 from bookshelf.models import Book
 
-# Retrieve all books
-books = Book.objects.all()
+# Retrieve the book with title "1984"
+book = Book.objects.get(title="1984")
 
-for book in books:
-    print(book.title, book.author, book.publication_year)
+# Display book details
+print(book.title)
+print(book.author)
+print(book.publication_year)
