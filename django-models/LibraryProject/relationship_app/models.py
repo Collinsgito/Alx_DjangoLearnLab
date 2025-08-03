@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib.auth.decorators import permission_required
+from django.http import HttpResponse
+from django.contrib.auth.decorators import user_passes_test
+
 class Author(models.Model):
     name = models.CharField(max_length=100)
 
@@ -106,3 +110,34 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
     instance.userprofile.save()
+def is_admin(user):
+    return hasattr(user, 'userprofile') and user.userprofile.role == 'Admin'
+
+def is_librarian(user):
+    return hasattr(user, 'userprofile') and user.userprofile.role == 'Librarian'
+
+def is_member(user):
+    return hasattr(user, 'userprofile') and user.userprofile.role == 'Member'
+
+@user_passes_test(is_admin)
+def admin_view(request):
+    return HttpResponse("Welcome Admin!")
+
+@user_passes_test(is_librarian)
+def librarian_view(request):
+    return HttpResponse("Welcome Librarian!")
+
+@user_passes_test(is_member)
+def member_view(request):
+    return HttpResponse("Welcome Member!")
+@permission_required('relationship_app.can_add_book', raise_exception=True)
+def add_book_view(request):
+    return HttpResponse("Add Book Page")
+
+@permission_required('relationship_app.can_change_book', raise_exception=True)
+def edit_book_view(request):
+    return HttpResponse("Edit Book Page")
+
+@permission_required('relationship_app.can_delete_book', raise_exception=True)
+def delete_book_view(request):
+    return HttpResponse("Delete Book Page")
