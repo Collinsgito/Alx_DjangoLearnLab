@@ -38,7 +38,7 @@ def profile_upload_to(instance, filename):
     return f"profile_photos/{instance.username}_{filename}"
 
 
-class User(AbstractUser):
+class CustomUser(AbstractUser):
     date_of_birth = models.DateField(null=True, blank=True)
     profile_photo = models.ImageField(
         upload_to=profile_upload_to,
@@ -65,4 +65,4 @@ class User(AbstractUser):
         )
 
 
-# Create your models here.
+
