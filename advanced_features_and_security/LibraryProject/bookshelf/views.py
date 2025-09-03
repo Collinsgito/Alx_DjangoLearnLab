@@ -1,6 +1,5 @@
 
 # LibraryProject/bookshelf/views.py
-from .forms import ExampleForm
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import PermissionDenied
@@ -68,6 +67,5 @@ def example_form_view(request):
             })
     else:
         form = ExampleForm()
-
 
     return render(request, "bookshelf/form_example.html", {"form": form})
