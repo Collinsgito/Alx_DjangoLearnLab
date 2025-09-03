@@ -124,3 +124,22 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEBUG = False
+
+# Helps prevent XSS attacks by enabling browser filters
+SECURE_BROWSER_XSS_FILTER = True
+
+# Protect against clickjacking
+X_FRAME_OPTIONS = "DENY"
+
+# Prevent MIME-type sniffing
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Ensure cookies are only sent over HTTPS
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+# Example CSP (Content Security Policy)
+# Requires django-csp if you want full support, but we can add manually:
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "cdn.jsdelivr.net")

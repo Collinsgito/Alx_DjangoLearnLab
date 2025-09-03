@@ -19,3 +19,7 @@ class BookForm(forms.ModelForm):
     class Meta:
         model = Book
         fields = ["title", "author", "description"]
+class ExampleForm(forms.Form):
+    """Example form to demonstrate CSRF and safe input handling."""
+    name = forms.CharField(max_length=100, required=True)
+    message = forms.CharField(widget=forms.Textarea, required=True)
