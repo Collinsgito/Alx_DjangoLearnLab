@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
@@ -6,13 +6,19 @@ from .models import Book
 from .serializers import BookSerializer
 
 
-class BookViewSet(viewsets.ModelViewSet):
+class BookListView(generics.ListAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
 
-    # required by checker:
+    # ✅ Filtering, searching, ordering
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["title", "author", "publication_year"]
-    search_fields = ["title", "author"]
-    ordering_fields = ["title", "publication_year"]
-    ordering = ["title"]
+
+    # Filtering by attributes
+    filterset_fields = ['title', 'author', 'publication_year']
+
+    # Searching (title + author)
+    search_fields = ['title', 'author']
+
+    # Ordering (title + publication_year)
+    ordering_fields = ['title', 'publication_year']
+    ordering = ['title']  # default ordering
