@@ -1,3 +1,4 @@
+# blog/urls.py
 from django.urls import path
 from .views import (
     PostListView, PostDetailView, PostCreateView,
@@ -8,11 +9,11 @@ from .views import (
 
 urlpatterns = [
     # Posts
-    path('posts/', PostListView.as_view(), name='post_list'),
-    path('posts/new/', PostCreateView.as_view(), name='post_create'),
-    path('posts/<int:pk>/', PostDetailView.as_view(), name='post_detail'),
-    path('posts/<int:pk>/update/', PostUpdateView.as_view(), name='post_update'),
-    path('posts/<int:pk>/delete/', PostDeleteView.as_view(), name='post_delete'),
+    path('', PostListView.as_view(), name='post_list'),
+    path('post/new/', PostCreateView.as_view(), name='post_create'),
+    path('post/<int:pk>/', PostDetailView.as_view(), name='post_detail'),
+    path('post/<int:pk>/update/', PostUpdateView.as_view(), name='post_update'),
+    path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post_delete'),
 
     # Auth & profile
     path('register/', register, name='register'),
