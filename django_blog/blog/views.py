@@ -1,57 +1,122 @@
-from django.shortcuts import render,redirect, get_object_or_404
-from .models import Post
+from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from .forms import SignUpForm, UserUpdateForm, ProfileUpdateForm
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+
+from django.contrib.auth.views import LoginView, LogoutView
+
+from .models import Post
+from .forms import SignUpForm, UserUpdateForm, ProfileUpdateForm, PostForm
 
 
-def post_list(request):
-    posts = Post.objects.all()
-    return render(request, "blog/post_list.html", {"posts": posts})
+# ---------------------------
+# Authentication Views
+# ---------------------------
 
-def post_detail(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    return render(request, "blog/post_detail.html", {"post": post})
 def register(request):
+    """User registration view."""
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Optionally login user immediately
-            login(request, user)
-            return redirect('post_list')   # or 'profile' 
+            login(request, user)  # log in the new user
+            return redirect('post_list')
     else:
         form = SignUpForm()
-    return render(request, 'blog/register.html', {'form': form})
+    return render(request, 'registration/register.html', {'form': form})
 
-from django.contrib.auth.views import LoginView, LogoutView
 
 class CustomLoginView(LoginView):
+    """Custom login using templates/registration/login.html"""
     template_name = 'blog/login.html'
 
+
 class CustomLogoutView(LogoutView):
-    template_name = 'blog/logged_out.html'  # optional simple confirmation
+    """Custom logout confirmation"""
+    template_name = 'blog/logged_out.html'
+
 
 @login_required
 def profile_view(request):
-    # show profile
-    return render(request, 'blog/profile.html', {})
+    """Show logged-in user profile"""
+    return render(request, 'registration/profile.html')
+
 
 @login_required
 def profile_edit(request):
+    """Edit user & profile info"""
     if request.method == 'POST':
         u_form = UserUpdateForm(request.POST, instance=request.user)
-        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+        p_form = ProfileUpdateForm(
+            request.POST,
+            request.FILES,
+            instance=getattr(request.user, "profile", None)  # safe check
+        )
         if u_form.is_valid() and p_form.is_valid():
             u_form.save()
             p_form.save()
             return redirect('profile')
     else:
         u_form = UserUpdateForm(instance=request.user)
-        p_form = ProfileUpdateForm(instance=request.user.profile)
+        p_form = ProfileUpdateForm(
+            instance=getattr(request.user, "profile", None)
+        )
 
-    context = {
-        'u_form': u_form,
-        'p_form': p_form,
-    }
-    return render(request, 'blog/profile_edit.html', context)
+    context = {'u_form': u_form, 'p_form': p_form}
+    return render(request, 'registration/profile_edit.html', context)
+
+
+# ---------------------------
+# Blog Post Views (CRUD)
+# ---------------------------
+
+class PostListView(ListView):
+    """List all posts"""
+    model = Post
+    template_name = 'blog/post_list.html'
+    context_object_name = 'posts'
+    paginate_by = 10
+
+
+class PostDetailView(DetailView):
+    """View a single post"""
+    model = Post
+    template_name = 'blog/post_detail.html'
+    context_object_name = 'post'
+
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    """Create a new post (auth required)"""
+    model = Post
+    form_class = PostForm
+    template_name = 'blog/post_form.html'
+    success_url = reverse_lazy('post_list')
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Edit an existing post (only by author)"""
+    model = Post
+    form_class = PostForm
+    template_name = 'blog/post_form.html'
+    success_url = reverse_lazy('post_list')
+
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author
+
+
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """Delete a post (only by author)"""
+    model = Post
+    template_name = 'blog/post_confirm_delete.html'
+    success_url = reverse_lazy('post_list')
+
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author

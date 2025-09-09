@@ -2,14 +2,34 @@
 {% block title %}All posts{% endblock %}
 {% block content %}
   <h2>Posts</h2>
+
+  {% if user.is_authenticated %}
+    <p><a href="{% url 'post_create' %}">Create new post</a></p>
+  {% else %}
+    <p><a href="{% url 'login' %}">Login</a> to create posts.</p>
+  {% endif %}
+
   <ul>
     {% for post in posts %}
       <li>
-        <a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a>
-        <small>by {{ post.author }} — {{ post.published_date }}</small>
+        <h3><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h3>
+        <p><small>by {{ post.author }} — {{ post.published_date }}</small></p>
+        <p>{{ post.content|truncatechars:200 }}</p>
       </li>
     {% empty %}
       <li>No posts yet.</li>
     {% endfor %}
   </ul>
+
+  {% if is_paginated %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+      {% endif %}
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">next</a>
+      {% endif %}
+    </div>
+  {% endif %}
 {% endblock %}
